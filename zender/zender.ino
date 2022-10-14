@@ -96,15 +96,23 @@ void loop() {
   btn_mode_manual.loop();
   btn_mode_effect.loop();
   btn_onoff.loop();
-
-  if (mode != UNDEFINED){
-      color_and_controls = getColorAndControls();
-      if (effect_button_pressed or (color_and_controls != previous_color_and_controls)){ //Send every time effect button is pressed OR when color value or mode have changed
+  color_and_controls = getColorAndControls();
+  switch (mode){
+    case UNDEFINED:
+      break;
+    case MANUAL:
+      if (color_and_controls != previous_color_and_controls){
+        previous_color_and_controls = color_and_controls;
+        radio.write(&color_and_controls, sizeof(color_and_controls));      
+      }
+      break;
+    case EFFECT:
+      if (effect_button_pressed){
         previous_color_and_controls = color_and_controls;
         radio.write(&color_and_controls, sizeof(color_and_controls));
         effect_button_pressed = false;
-        //Serial.print("Sent "); Serial.println(color_and_controls, HEX);
       }
+      break;
   }
   delay(5);
 }
@@ -120,7 +128,6 @@ unsigned long getColorAndControls(void){
 
   int g_voltage = analogRead(G_RESISTOR_PIN);
   unsigned long green = 255 - map(g_voltage, 0, 1023, 0, 255);
-  
   
   int b_voltage = analogRead(B_RESISTOR_PIN);
   unsigned long blue = 255 - map(b_voltage, 0, 1023, 0, 255);
