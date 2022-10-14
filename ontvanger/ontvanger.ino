@@ -35,18 +35,19 @@ CCCCCCCC|RRRRRRRR|GGGGGGGG|BBBBBBBB
 RF24 radio(10, 9);  // CE, CSN
 const byte address[6] = "00001";
 Adafruit_NeoPixel led_strip(NBR_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
-byte effect_number = 0;
+byte effect_number = 1;
+byte total_effects = 5;
 byte mode = UNDEFINED;
+byte previous_mode = mode;
 bool leds_on = true; //flag to indicate whether LEDS should be on or off
 unsigned long command_and_color = 0;
 byte red  = 0;
 byte green = 0;
 byte blue = 0;
-byte effectLoopCnt = 0;        // Number of times you got in the effect function
-byte effectGenericCounterA = 0; // Generic couter that can be used by any effect
-byte effectGenericCounterB = 0; // Generic couter that can be used by any effect
-
-
+byte effectLoopCnt = 0;     // Number of times you got in the effect function
+long effectGenericVarA = 0; // Generic global var that can be used by any effect
+long effectGenericVarB = 0; // Generic global var that can be used by any effect
+long effectGenericVarC = 0; // Generic global var that can be used by any effect
 
 unsigned long timestamp = 0;
 
@@ -66,11 +67,11 @@ void setup() {
 bool getAndDecodeCommand(void){
   //returns true if a command was received from remote, false otherwise
   if (radio.available()){
-    radio.read(&command_and_color, sizeof(command_and_color));
-    Serial.println(command_and_color, HEX);
+    radio.read(&command_and_color, sizeof(command_and_color));    
     byte control = (command_and_color & 0b11111111000000000000000000000000)>>24;
     if ((control & 0b00000010) == TOGGLE){ //toggle requested
-      leds_on = (not leds_on);    
+      leds_on = (not leds_on);
+      leds_on ? Serial.println("TOGGLE received - leds ON"):Serial.println("TOGGLE received - leds OFF");
     }
     else{
       red   =  (command_and_color & 0b00000000111111110000000000000000)>>16;
@@ -78,65 +79,157 @@ bool getAndDecodeCommand(void){
       blue  =  (command_and_color & 0b00000000000000000000000011111111)>>0;
     }
     mode = (control & 0b00000001);
-    
+    switch (mode){
+      case MANUAL:
+        Serial.println("Manual mode");
+        previous_mode = MANUAL;
+        break;
+      case EFFECT:                
+        if (previous_mode == EFFECT){
+          (effect_number<total_effects) ? (effect_number+=1) : (effect_number=1); //condition ? expression-true : expression-false          
+        }
+        Serial.print("Effect mode, effect number: ");Serial.println(effect_number);
+        previous_mode = EFFECT;
+        break;
+      case UNDEFINED:
+        Serial.println("Undefined mode, should not be here");
+        break;
+    }
     Serial.print("R: "); Serial.print(red); Serial.print(" G: "); Serial.print(green); Serial.print(" B: "); Serial.println(blue);
-    if (mode == MANUAL){
-      Serial.println("Manual mode");
-    }
-    if (mode == EFFECT){
-      effectLoopCnt = 0; //Reset the loop counter used in the effects.
-      effectGenericCounterA = 0;
-      effectGenericCounterB = 0;
-      Serial.println("Effect mode");
-      
-    }
-    if (leds_on){
-      Serial.println("Leds ON");
-    }
-    else{
-      Serial.println("Leds OFF");
-    }
-    
     return (true);
   }
   return (false);
 }
 
+void effect1(){
+  if ((millis() - timestamp) > 125){      
+   // effectGenericVarA used to keep track of the index
+   if ((effectGenericVarA) <= NBR_LEDS){
+    for (int blackpixel = 0; blackpixel < effectGenericVarA; blackpixel++){
+      led_strip.setPixelColor(blackpixel, led_strip.Color(0, 0, 0));
+    }
+    led_strip.setPixelColor(effectGenericVarA,  led_strip.Color(red, 0, 0));
+    led_strip.setPixelColor(effectGenericVarA+1,  led_strip.Color(0, green, 0));
+    led_strip.setPixelColor(effectGenericVarA+2,  led_strip.Color(0, 0, blue));
+    for (int blackpixel = effectGenericVarA+3; blackpixel < NBR_LEDS; blackpixel++){
+      led_strip.setPixelColor(blackpixel, led_strip.Color(0, 0, 0));
+    }
+    led_strip.show();
+    timestamp = millis();
+    effectGenericVarA +=1;
+   }
+   else{
+    effectGenericVarA = 0;
+   }
+  }
+}
+
+
+void effect2(){ //// Very slow rainbow
+  if ((millis() - timestamp) > 20){    
+    if (effectGenericVarA < 5*65536){    
+      for(int i=0; i<led_strip.numPixels(); i++) {
+        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
+        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+      }    
+      led_strip.show(); 
+      effectGenericVarA += 256;
+    } else {
+      effectGenericVarA = 0;
+    }
+    timestamp = millis(); 
+  }
+}
+
+void effect3(){ //// Slow rainbow
+  if ((millis() - timestamp) > 10){    
+    if (effectGenericVarA < 5*65536){    
+      for(int i=0; i<led_strip.numPixels(); i++) {
+        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
+        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+      }    
+      led_strip.show(); 
+      effectGenericVarA += 256;
+    } else {
+      effectGenericVarA = 0;
+    }
+    timestamp = millis(); 
+  }
+}
+
+void effect4(){ // Normal rainbow
+  if ((millis() - timestamp) > 5){    
+    if (effectGenericVarA < 5*65536){    
+      for(int i=0; i<led_strip.numPixels(); i++) {
+        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
+        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+      }    
+      led_strip.show(); 
+      effectGenericVarA += 256;
+    } else {
+      effectGenericVarA = 0;
+    }
+    timestamp = millis(); 
+  }
+}
+
+void effect5(){ // Fast rainbow
+  if ((millis() - timestamp) > 0){    
+    if (effectGenericVarA < 5*65536){    
+      for(int i=0; i<led_strip.numPixels(); i++) {
+        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
+        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+      }    
+      led_strip.show(); 
+      effectGenericVarA += 256;
+    } else {
+      effectGenericVarA = 0;
+    }
+    timestamp = millis(); 
+  }
+}
+
+  /*
+  for(effectGenericVarA; effectGenericVarA < 5*65536; effectGenericVarA += 256) {
+    for(int i=0; i<led_strip.numPixels(); i++) {
+      int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
+      led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+    }
+    led_strip.show();    
+  }
+  effectGenericVarA = 0;
+  */
+  
 void loop() {
     if (getAndDecodeCommand()){
-      if (leds_on == false){        
+      if (not leds_on){
         led_strip.fill(led_strip.Color(0, 0, 0), 0, NBR_LEDS);
         led_strip.show();
       }
       else{
         if (mode == MANUAL){
-          //Send command to set the color)
           led_strip.fill(led_strip.Color(red, green, blue), 0, NBR_LEDS);
           led_strip.show();
-        }       
+        }
       }
     }
     if (mode == EFFECT){
-      if ((millis() - timestamp) > 125){
-        //led_strip.fill(led_strip.Color(random(0,90), random(0,90), random(0,90)), 0, NBR_LEDS);
-        // effectGenericCounterA used to keep track of the index
-         if ((effectGenericCounterA) <= NBR_LEDS){
-          for (int blackpixel = 0; blackpixel < effectGenericCounterA; blackpixel++){
-            led_strip.setPixelColor(blackpixel, led_strip.Color(0, 0, 0));
-          }
-          led_strip.setPixelColor(effectGenericCounterA,  led_strip.Color(red, 0, 0));
-          led_strip.setPixelColor(effectGenericCounterA+1,  led_strip.Color(0, green, 0));
-          led_strip.setPixelColor(effectGenericCounterA+2,  led_strip.Color(0, 0, blue));
-          for (int blackpixel = effectGenericCounterA+3; blackpixel < NBR_LEDS; blackpixel++){
-            led_strip.setPixelColor(blackpixel, led_strip.Color(0, 0, 0));
-          }
-          led_strip.show();
-          timestamp = millis();
-          effectGenericCounterA +=1;
-         }
-         else{
-          effectGenericCounterA = 0;
-         }         
+      switch (effect_number){
+        case 1:
+          effect1();
+          break;
+        case 2:
+          effect2();
+          break;
+        case 3:
+          effect3();
+          break;
+        case 4:
+          effect4();
+          break;
+        case 5:
+          effect5();
+          break;
       }
     }
 }
