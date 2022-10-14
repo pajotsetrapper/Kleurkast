@@ -118,37 +118,30 @@ void rainbowEffect(int delay){
 }
 
 void effect1(){
-  if ((millis() - timestamp) > 125){      
-   // effectGenericVarA used to keep track of the index
-   if ((effectGenericVarA) <= NBR_LEDS){
-    for (int blackpixel = 0; blackpixel < effectGenericVarA; blackpixel++){
-      led_strip.setPixelColor(blackpixel, led_strip.Color(0, 0, 0));
-    }
-    led_strip.setPixelColor(effectGenericVarA,  led_strip.Color(red, 0, 0));
-    led_strip.setPixelColor(effectGenericVarA+1,  led_strip.Color(0, green, 0));
-    led_strip.setPixelColor(effectGenericVarA+2,  led_strip.Color(0, 0, blue));
-    for (int blackpixel = effectGenericVarA+3; blackpixel < NBR_LEDS; blackpixel++){
-      led_strip.setPixelColor(blackpixel, led_strip.Color(0, 0, 0));
-    }
+  if ((millis() - timestamp) > 100){    
+    int rpos=0; int gpos=0; int bpos=0;
+    led_strip.fill(led_strip.Color(0, 0, 0)); //Clear all    
+    ((effectGenericVarA)<led_strip.numPixels()) ? rpos=effectGenericVarA : rpos=((effectGenericVarA)%led_strip.numPixels());
+    ((effectGenericVarA+1)<led_strip.numPixels()) ? gpos=effectGenericVarA+1 : gpos=((effectGenericVarA+1)%led_strip.numPixels());
+    ((effectGenericVarA+2)<led_strip.numPixels()) ? bpos=effectGenericVarA+2 : bpos=((effectGenericVarA+2)%led_strip.numPixels());
+    led_strip.setPixelColor(rpos, led_strip.Color(red, 0, 0));
+    led_strip.setPixelColor(gpos, led_strip.Color(0, green, 0));
+    led_strip.setPixelColor(bpos, led_strip.Color(0, 0, blue));
+    (effectGenericVarA+1 < led_strip.numPixels()) ? effectGenericVarA+=1 : effectGenericVarA=0; //Start index
     led_strip.show();
     timestamp = millis();
-    effectGenericVarA +=1;
-   }
-   else{
-    effectGenericVarA = 0;
-   }
   }
 }
   
 void loop() {
     if (getAndDecodeCommand()){
       if (not leds_on){
-        led_strip.fill(led_strip.Color(0, 0, 0), 0, NBR_LEDS);
+        led_strip.fill(led_strip.Color(0, 0, 0), 0, led_strip.numPixels());
         led_strip.show();
       }
       else{
         if (mode == MANUAL){
-          led_strip.fill(led_strip.Color(red, green, blue), 0, NBR_LEDS);
+          led_strip.fill(led_strip.Color(red, green, blue), 0, led_strip.numPixels());
           led_strip.show();
         }
       }
