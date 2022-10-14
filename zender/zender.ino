@@ -69,12 +69,13 @@ const byte address[6] = "00001";
 unsigned long previous_color_and_controls = 0;
 byte previous_mode = UNDEFINED;
 byte mode  = UNDEFINED;
+bool effect_button_pressed = false;
 Button2 btn_mode_manual = Button2(BTN_MODE_MANUAL);
 Button2 btn_mode_effect  = Button2(BTN_MODE_EFFECT);
 Button2 btn_onoff   = Button2(BTN_ONOFF);
 
 void setup() {  
-  Serial.begin(115200);
+  //Serial.begin(115200);
   while (!radio.begin()){    
     delay(100);
     //Serial.println("Failed to initialize radio");
@@ -98,9 +99,10 @@ void loop() {
 
   if (mode != UNDEFINED){
       color_and_controls = getColorAndControls();
-      if (color_and_controls != previous_color_and_controls){ //Only send when color value or mode have changed
-        previous_color_and_controls = color_and_controls;        
+      if (effect_button_pressed or (color_and_controls != previous_color_and_controls)){ //Send every time effect button is pressed OR when color value or mode have changed
+        previous_color_and_controls = color_and_controls;
         radio.write(&color_and_controls, sizeof(color_and_controls));
+        effect_button_pressed = false;
         //Serial.print("Sent "); Serial.println(color_and_controls, HEX);
       }
   }
@@ -134,6 +136,7 @@ void btn_mode_manualClick(Button2 &btn){
 void btn_mode_effectClick(Button2 &btn){
   //Serial.println("Button effect mode pressed");
   mode = EFFECT;
+  effect_button_pressed = true; //Will force a command to be sent to the receiver
 }
 void btn_onoffClick(Button2 &btn){
   //Send 'toggle' command to receiver, up to receiver to decide wether it should swith on/off.
