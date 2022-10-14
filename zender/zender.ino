@@ -70,6 +70,7 @@ unsigned long previous_color_and_controls = 0;
 byte previous_mode = UNDEFINED;
 byte mode  = UNDEFINED;
 bool effect_button_pressed = false;
+bool manual_button_pressed = false;
 Button2 btn_mode_manual = Button2(BTN_MODE_MANUAL);
 Button2 btn_mode_effect  = Button2(BTN_MODE_EFFECT);
 Button2 btn_onoff   = Button2(BTN_ONOFF);
@@ -101,9 +102,10 @@ void loop() {
     case UNDEFINED:
       break;
     case MANUAL:
-      if (color_and_controls != previous_color_and_controls){
+      if ((color_and_controls != previous_color_and_controls) or manual_button_pressed) {
         previous_color_and_controls = color_and_controls;
-        radio.write(&color_and_controls, sizeof(color_and_controls));      
+        radio.write(&color_and_controls, sizeof(color_and_controls));
+        manual_button_pressed = false;     
       }
       break;
     case EFFECT:
@@ -139,6 +141,7 @@ unsigned long getColorAndControls(void){
 void btn_mode_manualClick(Button2 &btn){
   //Serial.println("Button manual mode pressed");
   mode = MANUAL;
+  manual_button_pressed = true; //Will force a command to be sent to the receiver
 }
 void btn_mode_effectClick(Button2 &btn){
   //Serial.println("Button effect mode pressed");
