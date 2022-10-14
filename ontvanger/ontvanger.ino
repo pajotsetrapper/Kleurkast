@@ -36,7 +36,7 @@ RF24 radio(10, 9);  // CE, CSN
 const byte address[6] = "00001";
 Adafruit_NeoPixel led_strip(NBR_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 byte effect_number = 1;
-byte total_effects = 5;
+byte total_effects = 7;
 byte mode = UNDEFINED;
 byte previous_mode = mode;
 bool leds_on = true; //flag to indicate whether LEDS should be on or off
@@ -108,12 +108,26 @@ void rainbowEffect(int delay){
         int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
         led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
       }    
-      led_strip.show(); 
+      led_strip.show();
       effectGenericVarA += 256;
     } else {
       effectGenericVarA = 0;
     }
-    timestamp = millis(); 
+    timestamp = millis();
+  }
+}
+
+void stroboEffect(int delay){
+  byte rgbcomponent = 0;
+  if ((millis() - timestamp) > delay){
+    effectGenericVarA==0 ? rgbcomponent=0 : rgbcomponent=200;
+    effectGenericVarA+=1;   
+    led_strip.fill(led_strip.Color(rgbcomponent, rgbcomponent, rgbcomponent));
+    led_strip.show();    
+    timestamp = millis();
+    if (effectGenericVarA > 1){
+      effectGenericVarA = 0;
+    }
   }
 }
 
@@ -162,6 +176,12 @@ void loop() {
           break;
         case 5:
           rainbowEffect(0); //Fast
+          break;
+        case 6:
+          stroboEffect(100);
+          break;
+        case 7:
+          stroboEffect(50);
           break;
       }
     }
