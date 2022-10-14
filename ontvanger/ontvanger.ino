@@ -101,6 +101,22 @@ bool getAndDecodeCommand(void){
   return (false);
 }
 
+void rainbowEffect(int delay){
+  if ((millis() - timestamp) > delay){    
+    if (effectGenericVarA < 5*65536){    
+      for(int i=0; i<led_strip.numPixels(); i++) {
+        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
+        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+      }    
+      led_strip.show(); 
+      effectGenericVarA += 256;
+    } else {
+      effectGenericVarA = 0;
+    }
+    timestamp = millis(); 
+  }
+}
+
 void effect1(){
   if ((millis() - timestamp) > 125){      
    // effectGenericVarA used to keep track of the index
@@ -123,82 +139,6 @@ void effect1(){
    }
   }
 }
-
-
-void effect2(){ //// Very slow rainbow
-  if ((millis() - timestamp) > 20){    
-    if (effectGenericVarA < 5*65536){    
-      for(int i=0; i<led_strip.numPixels(); i++) {
-        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
-        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
-      }    
-      led_strip.show(); 
-      effectGenericVarA += 256;
-    } else {
-      effectGenericVarA = 0;
-    }
-    timestamp = millis(); 
-  }
-}
-
-void effect3(){ //// Slow rainbow
-  if ((millis() - timestamp) > 10){    
-    if (effectGenericVarA < 5*65536){    
-      for(int i=0; i<led_strip.numPixels(); i++) {
-        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
-        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
-      }    
-      led_strip.show(); 
-      effectGenericVarA += 256;
-    } else {
-      effectGenericVarA = 0;
-    }
-    timestamp = millis(); 
-  }
-}
-
-void effect4(){ // Normal rainbow
-  if ((millis() - timestamp) > 5){    
-    if (effectGenericVarA < 5*65536){    
-      for(int i=0; i<led_strip.numPixels(); i++) {
-        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
-        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
-      }    
-      led_strip.show(); 
-      effectGenericVarA += 256;
-    } else {
-      effectGenericVarA = 0;
-    }
-    timestamp = millis(); 
-  }
-}
-
-void effect5(){ // Fast rainbow
-  if ((millis() - timestamp) > 0){    
-    if (effectGenericVarA < 5*65536){    
-      for(int i=0; i<led_strip.numPixels(); i++) {
-        int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
-        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
-      }    
-      led_strip.show(); 
-      effectGenericVarA += 256;
-    } else {
-      effectGenericVarA = 0;
-    }
-    timestamp = millis(); 
-  }
-}
-
-  /*
-  for(effectGenericVarA; effectGenericVarA < 5*65536; effectGenericVarA += 256) {
-    for(int i=0; i<led_strip.numPixels(); i++) {
-      int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
-      led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
-    }
-    led_strip.show();    
-  }
-  effectGenericVarA = 0;
-  */
   
 void loop() {
     if (getAndDecodeCommand()){
@@ -219,16 +159,16 @@ void loop() {
           effect1();
           break;
         case 2:
-          effect2();
+          rainbowEffect(50); //Very slow
           break;
         case 3:
-          effect3();
+          rainbowEffect(25); //Slow
           break;
         case 4:
-          effect4();
+          rainbowEffect(5); //Normal
           break;
         case 5:
-          effect5();
+          rainbowEffect(0); //Fast
           break;
       }
     }
