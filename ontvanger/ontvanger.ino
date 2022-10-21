@@ -22,17 +22,17 @@ CCCCCCCC|RRRRRRRR|GGGGGGGG|BBBBBBBB
 
 #include <Adafruit_NeoPixel.h>
 #include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
+//#include <nRF24L01.h>
+//#include <RF24.h>
 
-#define LED_STRIP_PIN   2
-#define NBR_LEDS 8
+#define LED_STRIP_PIN   6
+#define NBR_LEDS 60
 #define MANUAL 0
 #define EFFECT 1
 #define TOGGLE 2
 #define UNDEFINED 255
 
-RF24 radio(10, 9);  // CE, CSN
+//RF24 radio(10, 9);  // CE, CSN
 const byte address[6] = "00001";
 Adafruit_NeoPixel led_strip(NBR_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 byte effect_number = 1;
@@ -54,6 +54,7 @@ unsigned long timestamp = 0;
 void setup() {
     Serial.begin(115200);
     led_strip.begin();
+    /*
     while (!radio.begin()){
       delay(100);
     }
@@ -62,10 +63,19 @@ void setup() {
     radio.setDataRate(RF24_250KBPS);  //Datarate = 250Kbps
     radio.openReadingPipe(0, address);; //Set address
     radio.startListening(); //Set as receiver
+    */
 }
 
 bool getAndDecodeCommand(void){
   //returns true if a command was received from remote, false otherwise
+  //Dummy, bypassing getting the commands from the remote, for developing & testing effects without needing the entire circuit
+  mode = EFFECT;
+  red = 255;
+  green = 255;
+  blue = 255;
+  effect_number=1;
+    
+  /*
   if (radio.available()){
     radio.read(&command_and_color, sizeof(command_and_color));    
     byte control = (command_and_color & 0b11111111000000000000000000000000)>>24;
@@ -99,6 +109,7 @@ bool getAndDecodeCommand(void){
     return (true);
   }
   return (false);
+  */
 }
 
 void rainbowEffect(int delay){
