@@ -35,8 +35,8 @@ CCCCCCCC|RRRRRRRR|GGGGGGGG|BBBBBBBB
 //RF24 radio(10, 9);  // CE, CSN
 const byte address[6] = "00001";
 Adafruit_NeoPixel led_strip(NBR_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
-byte effect_number = 1;
-byte total_effects = 7;
+byte effect_number = 8;
+byte total_effects = 8;
 byte mode = UNDEFINED;
 byte previous_mode = mode;
 bool leds_on = true; //flag to indicate whether LEDS should be on or off
@@ -73,7 +73,7 @@ bool getAndDecodeCommand(void){
   red = 255;
   green = 255;
   blue = 255;
-  effect_number=1;
+  effect_number=8;
     
   /*
   if (radio.available()){
@@ -122,6 +122,32 @@ void rainbowEffect(int delay){
       led_strip.show();
       effectGenericVarA += 256;
     } else {
+      effectGenericVarA = 0;
+    }
+    timestamp = millis();
+  }
+}
+
+void fadingColorEffect(){
+  // variabled byte red, green and blue will be used to tune effect (as such controllable via potentiometers on remote)
+  // red: value (brightness)
+  // green: saturation (purity)
+  // blue: speed
+
+  int pixelHue;
+  byte saturation = green;
+  byte brightness = red;
+  byte speed = 255-blue;
+  
+  if ((millis() - timestamp) > speed){
+    if (effectGenericVarA < 65536){      
+      led_strip.fill(led_strip.gamma32(led_strip.ColorHSV(effectGenericVarA, saturation, brightness)));
+      //led_strip.fill(led_strip.ColorHSV(effectGenericVarA, saturation, value));
+      
+      led_strip.show();
+      effectGenericVarA += 256;
+    }
+    else {
       effectGenericVarA = 0;
     }
     timestamp = millis();
@@ -194,6 +220,10 @@ void loop() {
         case 7:
           stroboEffect(50);
           break;
+        case 8:
+          fadingColorEffect();
+          break;
+        
       }
     }
 }
