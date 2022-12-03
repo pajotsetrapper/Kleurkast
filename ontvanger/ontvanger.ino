@@ -36,7 +36,7 @@ RF24 radio(10, 9);  // CE, CSN
 const byte address[6] = "00001";
 Adafruit_NeoPixel led_strip(NBR_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 byte effect_number = 1;
-byte total_effects = 5;
+byte total_effects = 3;
 byte mode = UNDEFINED;
 byte previous_mode = mode;
 bool leds_on = true; //flag to indicate whether LEDS should be on or off
@@ -101,12 +101,22 @@ bool getAndDecodeCommand(void){
   return (false);
 }
 
-void rainbowEffect(int delay){
+void rainbowEffect(){
+/* The variables byte red, green and blue will be used to tune effect (as such controllable via potentiometers on remote)
+      - red: value (brightness)
+      - green: saturation
+      - blue: speed
+      5 (norm), 25, 50 (slow)
+  */
+  byte saturation = green;
+  byte brightness = red;
+  byte speed = 255-blue;
+  byte delay = map(speed,  0, 255, 0, 50);
   if ((millis() - timestamp) > delay){    
     if (effectGenericVarA < 5*65536){    
       for(int i=0; i<led_strip.numPixels(); i++) {
         int pixelHue = effectGenericVarA + (i * 65536L / led_strip.numPixels());
-        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue)));
+        led_strip.setPixelColor(i, led_strip.gamma32(led_strip.ColorHSV(pixelHue, saturation, brightness)));
       }    
       led_strip.show();
       effectGenericVarA += 256;
@@ -130,7 +140,8 @@ void fadingColorEffect(){
     if (effectGenericVarA < 65536){      
       led_strip.fill(led_strip.gamma32(led_strip.ColorHSV(effectGenericVarA, saturation, brightness)));
       led_strip.show();
-      effectGenericVarA += 256;
+      //effectGenericVarA += 256;
+      effectGenericVarA += 127;
     }
     else {
       effectGenericVarA = 0;
@@ -188,15 +199,9 @@ void loop() {
           fadingColorEffect();          
           break;
         case 2:
-          rainbowEffect(50); //Very slow
-          break;
+          rainbowEffect();
+          break;        
         case 3:
-          rainbowEffect(25); //Slow
-          break;
-        case 4:
-          rainbowEffect(5); //Normal
-          break;
-        case 5:
           effect1();
           break;
       }
