@@ -84,7 +84,7 @@ bool getAndDecodeCommand(void){
         Serial.println("Manual mode");
         previous_mode = MANUAL;
         break;
-      case EFFECT:                
+      case EFFECT:
         if (previous_mode == EFFECT){
           (effect_number<total_effects) ? (effect_number+=1) : (effect_number=1); //condition ? expression-true : expression-false          
         }
@@ -127,8 +127,10 @@ void rainbowEffect(){
   }
 }
 
-void fadingColorEffect(){
-  /* The variables byte red, green and blue will be used to tune effect (as such controllable via potentiometers on remote)
+void fadingColorEffect(int colorStep=127){
+  /*
+   * colorStep: parameter for defining the 'step' between 2 color iterations (more means smoother transitions, but reduced max speed)
+   * The variables byte red, green and blue will be used to tune effect (as such controllable via potentiometers on remote)
       - red: value (brightness)
       - green: saturation
       - blue: speed
@@ -136,12 +138,12 @@ void fadingColorEffect(){
   byte saturation = green;
   byte brightness = red;
   byte speed = 255-blue;
-  if ((millis() - timestamp) > speed){
+  byte delay = map(speed,  0, 255, 0, 10);
+  if (((millis() - timestamp) > delay)){
     if (effectGenericVarA < 65536){      
       led_strip.fill(led_strip.gamma32(led_strip.ColorHSV(effectGenericVarA, saturation, brightness)));
       led_strip.show();
-      //effectGenericVarA += 256;
-      effectGenericVarA += 127;
+      effectGenericVarA += colorStep;
     }
     else {
       effectGenericVarA = 0;
@@ -196,11 +198,11 @@ void loop() {
     if (mode == EFFECT){
       switch (effect_number){
         case 1:
-          fadingColorEffect();          
+          fadingColorEffect(1);
           break;
         case 2:
           rainbowEffect();
-          break;        
+          break;
         case 3:
           effect1();
           break;
