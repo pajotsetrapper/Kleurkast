@@ -84,7 +84,7 @@ void setup() {
   //Serial.println("Radio OK");
   radio.setChannel(90); //2490 Mhz, buiten Wifi & medisch device spectrum
   radio.setPALevel(RF24_PA_MAX);  //Max bereik  
-  radio.setDataRate(RF24_250KBPS);  //Datarate = 250Kbps
+  radio.setDataRate(RF24_1MBPS);  //Datarate = 250Kbps
   radio.openWritingPipe(address); //Adres instellen
   radio.stopListening(); //Zet als zender
   btn_mode_manual.setTapHandler(btn_mode_manualClick);
