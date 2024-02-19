@@ -31,8 +31,13 @@ CCCCCCCC|RRRRRRRR|GGGGGGGG|BBBBBBBB
 #define EFFECT 1
 #define TOGGLE 2
 #define UNDEFINED 255
+/*In the initial build (proto) CE used to be 10 / CSN used to be 9
+ *Updating these pins for use with nanoRF
+ */
+#define CE 7
+#define CSN 8
 
-RF24 radio(10, 9);  // CE, CSN
+RF24 radio(CE, CSN);  // CE, CSN
 const byte address[6] = "00001";
 Adafruit_NeoPixel led_strip(NBR_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 byte effect_number = 1;
@@ -59,7 +64,7 @@ void setup() {
     }
     radio.setChannel(90); //2490 Mhz, outside Wifi & medical device spectrum
     radio.setPALevel(RF24_PA_MAX);  //Max range    
-    radio.setDataRate(RF24_250KBPS);  //Datarate = 250Kbps
+    radio.setDataRate(RF24_1MBPS);  //Datarate = 1Mbps (changed from 250kbps to 1Mbps, as rfnano board has issues with 250kbps :-/)
     radio.openReadingPipe(0, address);; //Set address
     radio.startListening(); //Set as receiver
 }
