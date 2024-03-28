@@ -25,8 +25,8 @@ CCCCCCCC|RRRRRRRR|GGGGGGGG|BBBBBBBB
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define LED_STRIP_PIN   2
-#define NBR_LEDS 8
+#define LED_STRIP_PIN A4
+#define NBR_LEDS 60
 #define MANUAL 0
 #define EFFECT 1
 #define TOGGLE 2
